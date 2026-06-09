@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Day 2: OverTheWire Bandit</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0a0a0f;--surface:#111118;--surface2:#16161f;
+--border:#1e1e2e;--accent:#ff2d55;--accent2:#30d158;--accent3:#ffd60a;
+--text:#e2e8f0;--muted:#64748b;}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);font-family:'Inter',sans-serif;color:var(--text);
+display:flex;flex-direction:column;align-items:center;min-height:100vh;padding:1.5rem 1rem 4rem;}
+.topbar{width:100%;max-width:960px;display:flex;align-items:center;justify-content:space-between;
+margin-bottom:1.2rem;padding-bottom:1rem;border-bottom:1px solid var(--border);}
+.brand{font-family:'Poppins',sans-serif;font-size:.75rem;color:var(--accent);letter-spacing:.2em;font-weight:700;}
+.brand small{display:block;color:var(--muted);font-size:.65rem;margin-top:.3rem;letter-spacing:.05em;font-weight:400;}
+.stage{width:100%;max-width:960px;}
+.slide{display:none;background:var(--surface);border:1px solid var(--border);
+min-height:500px;padding:2.8rem 3.2rem;flex-direction:column;justify-content:center;
+position:relative;overflow:hidden;animation:sIn .3s ease forwards;}
+.slide.active{display:flex;}
+@keyframes sIn{from{opacity:0;transform:translateX(14px)}to{opacity:1;transform:translateX(0)}}
+.slide::before{content:'';position:absolute;top:0;left:0;width:4px;height:100%;
+background:linear-gradient(180deg,var(--accent),transparent 80%);}
+.slide::after{content:'';position:absolute;inset:0;
+background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.05) 2px,rgba(0,0,0,.05) 4px);
+pointer-events:none;}
+.stag{font-family:'Inter',sans-serif;font-size:.65rem;color:var(--accent);
+letter-spacing:.2em;text-transform:uppercase;margin-bottom:.9rem;}
+.sh1{font-size:2.8rem;font-weight:800;line-height:1.05;color:#fff;margin-bottom:.9rem;font-family:'Poppins',sans-serif;}
+.sh1 .hl{color:var(--accent);}
+.sh2{font-size:1.85rem;font-weight:800;color:#fff;margin-bottom:1.2rem;font-family:'Poppins',sans-serif;}
+.sub{font-size:.95rem;color:var(--muted);line-height:1.7;max-width:560px;}
+.blist{list-style:none;display:flex;flex-direction:column;gap:.65rem;}
+.blist li{display:flex;gap:.8rem;font-size:.9rem;line-height:1.5;color:#cbd5e1;align-items:flex-start;}
+.blist li::before{content:'>';color:var(--accent);font-family:'Courier New',monospace;font-size:.8rem;margin-top:.1rem;flex-shrink:0;}
+.cmd{font-family:'Courier New',monospace;font-size:.76rem;color:#5eead4;
+background:#000;border:1px solid var(--border);border-left:3px solid var(--accent);
+padding:.75rem 1rem;line-height:1.8;overflow-x:auto;white-space:pre;margin:.5rem 0;}
+.infobox{background:rgba(255,45,85,.05);border:1px solid rgba(255,45,85,.15);padding:1rem 1.2rem;}
+.infobox .ilabel{font-family:'Inter',sans-serif;font-size:.62rem;color:var(--accent);letter-spacing:.1em;margin-bottom:.4rem;}
+.infobox p{font-size:.85rem;color:#cbd5e1;line-height:1.6;}
+.warnbox{background:rgba(255,214,10,.06);border:1px solid rgba(255,214,10,.25);border-left:3px solid var(--accent3);padding:1rem 1.2rem;}
+.warnbox .wlabel{font-family:'Inter',sans-serif;font-size:.62rem;color:var(--accent3);letter-spacing:.1em;margin-bottom:.4rem;}
+.warnbox p{font-size:.85rem;color:#e2e8f0;line-height:1.6;}
+.okbox{background:rgba(48,209,88,.06);border:1px solid rgba(48,209,88,.25);border-left:3px solid var(--accent2);padding:1rem 1.2rem;}
+.okbox .oklabel{font-family:'Inter',sans-serif;font-size:.62rem;color:var(--accent2);letter-spacing:.1em;margin-bottom:.4rem;}
+.okbox p{font-size:.85rem;color:#e2e8f0;line-height:1.6;}
+.split{display:grid;grid-template-columns:1fr 1fr;gap:1rem;}
+.os-box{background:var(--surface2);border:1px solid var(--border);padding:1rem 1.2rem;}
+.os-label{font-family:'Inter',sans-serif;font-size:.62rem;letter-spacing:.12em;
+text-transform:uppercase;margin-bottom:.6rem;font-weight:700;}
+.os-label.win{color:#60a5fa;}
+.os-label.mac{color:var(--accent2);}
+.cmd-sm{font-family:'Courier New',monospace;font-size:.7rem;color:#5eead4;
+background:#000;border:1px solid var(--border);border-left:3px solid var(--accent);
+padding:.6rem .85rem;line-height:1.75;overflow-x:auto;white-space:pre;margin:.3rem 0;}
+.cmd-sm.green{border-left-color:var(--accent2);color:#86efac;}
+.level-card{background:rgba(255,45,85,.05);border:1px solid rgba(255,45,85,.22);
+border-left:4px solid var(--accent);padding:1.2rem 1.4rem;margin:.8rem 0;}
+.level-top{display:flex;align-items:center;gap:1rem;margin-bottom:.8rem;flex-wrap:wrap;}
+.level-num{font-family:'Courier New',monospace;font-size:1.8rem;font-weight:700;
+color:var(--accent);line-height:1;min-width:3rem;}
+.level-title{font-family:'Poppins',sans-serif;font-size:1.1rem;font-weight:700;color:#fff;}
+.level-skill{font-family:'Inter',sans-serif;font-size:.62rem;color:var(--accent2);
+border:1px solid rgba(48,209,88,.3);padding:.25rem .6rem;letter-spacing:.08em;}
+.level-desc{font-size:.88rem;color:#cbd5e1;line-height:1.6;margin-bottom:.9rem;}
+.hint-row{background:rgba(255,214,10,.06);border:1px solid rgba(255,214,10,.2);
+border-left:3px solid var(--accent3);padding:.8rem 1rem;margin-top:.6rem;}
+.hint-label{font-family:'Inter',sans-serif;font-size:.6rem;color:var(--accent3);
+letter-spacing:.12em;margin-bottom:.4rem;text-transform:uppercase;}
+.hint-cmd{display:inline-block;font-family:'Courier New',monospace;font-size:.74rem;
+color:var(--accent3);background:rgba(255,214,10,.08);padding:.15rem .4rem;margin:.1rem .2rem;}
+.steps ol{font-size:.86rem;color:#cbd5e1;line-height:1.6;margin-left:1.5rem;margin-top:.4rem;}
+.steps li{margin-bottom:.35rem;}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:1rem;}
+.card{background:var(--surface2);border:1px solid var(--border);padding:1rem 1.2rem;}
+.ctag{font-family:'Inter',sans-serif;font-size:.62rem;color:var(--accent);letter-spacing:.1em;margin-bottom:.4rem;}
+.card p{font-size:.84rem;color:#94a3b8;line-height:1.55;}
+.nav{width:100%;max-width:960px;display:flex;align-items:center;
+justify-content:space-between;margin-top:1.5rem;gap:1rem;}
+.nbtn{background:none;border:1px solid var(--border);color:var(--text);
+font-family:'Inter',sans-serif;font-size:.72rem;padding:.55rem 1.2rem;
+cursor:pointer;letter-spacing:.08em;transition:all .2s;}
+.nbtn:hover{border-color:var(--accent);color:var(--accent);}
+.nbtn:disabled{opacity:.2;cursor:not-allowed;}
+.pbar{flex:1;height:2px;background:var(--border);}
+.pfill{height:100%;background:var(--accent);transition:width .3s;}
+.scnt{font-family:'Courier New',monospace;font-size:.62rem;color:var(--muted);min-width:55px;text-align:right;}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div class="brand">DAY 2<small>OverTheWire Bandit: Levels 1 to 10</small></div>
+</div>
+<div class="stage">
+
+<div class="slide active" id="s1">
+  <div class="stag">Welcome</div>
+  <h1 class="sh1">Into the<br><span class="hl">Terminal</span></h1>
+  <p class="sub">Today you open a terminal for the first time and immediately put it to work. OverTheWire Bandit is a hacking game played entirely through the command line. Each level hides a password. You find it, use it to unlock the next level, and learn a new skill every step. By the end of today you will have cleared 10 levels.</p>
+</div>
+
+<div class="slide" id="s2">
+  <div class="stag">Concept</div>
+  <h2 class="sh2">What Is a Terminal?</h2>
+  <p style="font-size:.9rem;color:#cbd5e1;line-height:1.7;margin-bottom:1rem;">A terminal is a text-based way to control a computer. Instead of clicking icons, you type commands. It looks plain. It is the most powerful tool on any computer.</p>
+  <div class="infobox">
+    <div class="ilabel">WHY HACKERS LIVE HERE</div>
+    <p>Every server on the internet runs Linux with no icons and no mouse. To work with real systems you must use the terminal. Bandit teaches you the terminal by making a game out of it.</p>
+  </div>
+</div>
+
+<div class="slide" id="s3">
+  <div class="stag">Setup</div>
+  <h2 class="sh2">Open Your Terminal</h2>
+  <div class="split">
+    <div class="os-box">
+      <div class="os-label win">WINDOWS</div>
+      <p style="font-size:.84rem;color:#94a3b8;line-height:1.6;">Press the Windows key. Type: powershell. Press Enter. A blue or black window opens. PowerShell can run the ssh command you need today.</p>
+    </div>
+    <div class="os-box">
+      <div class="os-label mac">MAC</div>
+      <p style="font-size:.84rem;color:#94a3b8;line-height:1.6;">Press Command + Space. Type: Terminal. Press Enter. A window opens. This is your terminal.</p>
+    </div>
+  </div>
+  <div class="okbox" style="margin-top:1rem;">
+    <div class="oklabel">YOU WILL SEE</div>
+    <p>A prompt with a blinking cursor waiting for you to type. Nothing is broken. It is ready for a command.</p>
+  </div>
+</div>
+
+<div class="slide" id="s4">
+  <div class="stag">Command Primer</div>
+  <h2 class="sh2">The Commands You Will Use Today</h2>
+  <p style="font-size:.86rem;color:var(--muted);margin-bottom:.7rem;">Bandit runs on Linux, so everyone uses the same Linux commands once connected. Here are the essentials. Do not memorize them, just know they exist. You will learn each one as you need it.</p>
+  <div class="cmd-sm green">ls                 list the files here
+cd foldername      go into a folder
+cd ..              go back one folder
+cat filename       read a file
+file filename      find out what kind of file it is
+find               search for files
+grep "word" file   search inside a file for a word
+ls -a              list ALL files including hidden ones</div>
+  <div class="infobox" style="margin-top:.6rem;">
+    <div class="ilabel">KEEP THIS HANDY</div>
+    <p>Use your printed cheat sheet for the full reference. Each Bandit level below tells you which of these to reach for.</p>
+  </div>
+</div>
+
+<div class="slide" id="s5">
+  <div class="stag">Concept</div>
+  <h2 class="sh2">What Is SSH?</h2>
+  <p style="font-size:.9rem;color:#cbd5e1;line-height:1.7;margin-bottom:1rem;">SSH stands for Secure Shell. It lets you log into another computer over the internet and use its terminal as if you were sitting in front of it. Bandit lives on a server you reach with SSH.</p>
+  <div class="two-col">
+    <div class="card"><div class="ctag">WHAT IT GIVES YOU</div><p>A terminal session on the Bandit server. You type commands, they run there, results come back to you.</p></div>
+    <div class="card"><div class="ctag">ALREADY INSTALLED</div><p>SSH is built into Windows PowerShell and Mac Terminal. Nothing to download.</p></div>
+  </div>
+</div>
+
+<div class="slide" id="s6">
+  <div class="stag">Concept</div>
+  <h2 class="sh2">The SSH Command</h2>
+  <p style="font-size:.88rem;color:var(--muted);margin-bottom:.6rem;">Every SSH connection follows the same pattern:</p>
+  <div class="cmd">ssh username@hostname -p port</div>
+  <ul class="blist" style="margin-top:.8rem;">
+    <li><strong>username</strong> - who you log in as (bandit0, bandit1, and so on)</li>
+    <li><strong>@hostname</strong> - the address of the server</li>
+    <li><strong>-p port</strong> - which door to knock on (Bandit uses 2220)</li>
+  </ul>
+  <div class="warnbox" style="margin-top:1rem;">
+    <div class="wlabel">FIRST TIME WARNING</div>
+    <p>The first time you connect, it asks "are you sure you want to continue connecting?" Type yes and press Enter. Normal, happens once per server.</p>
+  </div>
+</div>
+
+<div class="slide" id="s7">
+  <div class="stag">How Bandit Works</div>
+  <h2 class="sh2">The Rules of the Game</h2>
+  <ul class="blist">
+    <li>Each level is a separate user account on the Bandit server</li>
+    <li>You SSH in using that level's username and password</li>
+    <li>Somewhere on that account is a file with the password for the NEXT level</li>
+    <li>Find the password, use it to SSH into the next level, repeat</li>
+    <li>Write every password down. If you lose one, you redo that level</li>
+  </ul>
+  <div class="infobox" style="margin-top:1rem;">
+    <div class="ilabel">YOUR MOST IMPORTANT HABIT</div>
+    <p>Open Notepad or TextEdit right now. Keep it open all day. Paste every password the moment you find it.</p>
+  </div>
+</div>
+
+<div class="slide" id="s8">
+  <div class="stag">Level 0</div>
+  <h2 class="sh2">Connect to the Server</h2>
+  <p style="font-size:.88rem;color:var(--muted);margin-bottom:.6rem;">Level 0 is the connection itself. In your terminal, type:</p>
+  <div class="cmd">ssh bandit0@bandit.labs.overthewire.org -p 2220</div>
+  <div class="steps"><ol>
+    <li>Type the command above and press Enter</li>
+    <li>When asked to continue, type yes and press Enter</li>
+    <li>Password: bandit0</li>
+    <li>You are now inside the Bandit server</li>
+    <li>Type ls to see the files here</li>
+    <li>Type cat readme to read the file and get Level 1's password</li>
+    <li>Paste that password into your text file immediately</li>
+  </ol></div>
+</div>
+
+<div class="slide" id="s9">
+  <div class="stag">Advancing</div>
+  <h2 class="sh2">How to Move to the Next Level</h2>
+  <p style="font-size:.88rem;color:var(--muted);margin-bottom:.6rem;">Once you find a password, disconnect and reconnect as the next user:</p>
+  <div class="cmd">exit                          disconnect from current level
+
+ssh bandit1@bandit.labs.overthewire.org -p 2220
+                              connect as level 1 (change the number each time)</div>
+  <div class="okbox" style="margin-top:1rem;">
+    <div class="oklabel">THE PATTERN</div>
+    <p>bandit0 finds the password, then you log in as bandit1 with it. bandit1 finds the next, you log in as bandit2. The username number always matches the level you are entering.</p>
+  </div>
+</div>
+
+<div class="slide" id="s10">
+  <div class="stag">Level 1</div>
+  <h2 class="sh2">Challenge 1: The Dash File</h2>
+  <div class="level-card">
+    <div class="level-top">
+      <div class="level-num">1</div>
+      <div>
+        <div class="level-title">Reading a file named with a dash</div>
+        <span class="level-skill">SKILL: special filename trick</span>
+      </div>
+    </div>
+    <div class="level-desc">The password is in a file called <strong>-</strong> (just a dash). The problem: cat - does not work, because the dash makes the terminal wait for keyboard input instead of reading the file. You need a workaround.</div>
+    <div class="hint-row">
+      <div class="hint-label">Command Hints</div>
+      <p style="font-size:.84rem;color:#e2e8f0;">Read the file by giving its location, not just its name. The prefix <span class="hint-cmd">./</span> means "this file right here". Combine with <span class="hint-cmd">cat</span>. So you want cat then ./ then the dash.</p>
+    </div>
+  </div>
+</div>
+
+<div class="slide" id="s11">
+  <div class="stag">Level 2</div>
+  <h2 class="sh2">Challenge 2: Spaces in a Filename</h2>
+  <div class="level-card">
+    <div class="level-top">
+      <div class="level-num">2</div>
+      <div>
+        <div class="level-title">Filename with spaces</div>
+        <span class="level-skill">SKILL: quoting filenames</span>
+      </div>
+    </div>
+    <div class="level-desc">The password is in a file whose name has spaces in it. The terminal normally treats each space as a separator, so typing the name plainly confuses it.</div>
+    <div class="hint-row">
+      <div class="hint-label">Command Hints</div>
+      <p style="font-size:.84rem;color:#e2e8f0;">Wrap the whole filename in quotes: <span class="hint-cmd">cat "..."</span>. Or put a backslash before each space. Easiest of all: type the first few letters and press <span class="hint-cmd">TAB</span> to auto-complete.</p>
+    </div>
+  </div>
+</div>
+
+<div class="slide" id="s12">
+  <div class="stag">Level 3</div>
+  <h2 class="sh2">Challenge 3: The Hidden File</h2>
+  <div class="level-card">
+    <div class="level-top">
+      <div class="level-num">3</div>
+      <div>
+        <div class="level-title">Hidden file inside a folder</div>
+        <span class="level-skill">SKILL: revealing hidden files</span>
+      </div>
+    </div>
+    <div class="level-desc">The password is in a hidden file inside a directory called <strong>inhere</strong>. A normal ls will not show it. Hidden files on Linux start with a dot.</div>
+    <div class="hint-row">
+      <div class="hint-label">Command Hints</div>
+      <p style="font-size:.84rem;color:#e2e8f0;">Go into the folder with <span class="hint-cmd">cd inhere</span>. List everything including hidden files with <span class="hint-cmd">ls -a</span>. Then read the hidden file with <span class="hint-cmd">cat</span>.</p>
+    </div>
+  </div>
+</div>
+
+<div class="slide" id="s13">
+  <div class="stag">Level 4</div>
+  <h2 class="sh2">Challenge 4: Find the Readable File</h2>
+  <div class="level-card">
+    <div class="level-top">
+      <div class="level-num">4</div>
+      <div>
+        <div class="level-title">One readable file among many</div>
+        <span class="level-skill">SKILL: the file command</span>
+      </div>
+    </div>
+    <div class="level-desc">The inhere directory has many files. Only one holds readable text. The rest are binary data that print as garbage. You need to identify the human-readable one without opening each.</div>
+    <div class="hint-row">
+      <div class="hint-label">Command Hints</div>
+      <p style="font-size:.84rem;color:#e2e8f0;">The <span class="hint-cmd">file</span> command tells you what kind of data a file holds. Run <span class="hint-cmd">file ./*</span> to check all of them at once. Look for the one that says ASCII text, then cat it.</p>
+    </div>
+  </div>
+</div>
+
+<div class="slide" id="s14">
+  <div class="stag">Level 5</div>
+  <h2 class="sh2">Challenge 5: Find by Properties</h2>
+  <div class="level-card">
+    <div class="level-top">
+      <div class="level-num">5</div>
+      <div>
+        <div class="level-title">Find a file matching specific traits</div>
+        <span class="level-skill">SKILL: find with filters</span>
+      </div>
+    </div>
+    <div class="level-desc">The password file is buried in many subfolders inside inhere. It has three traits: human-readable, exactly 1033 bytes, and not executable.</div>
+    <div class="hint-row">
+      <div class="hint-label">Command Hints</div>
+      <p style="font-size:.84rem;color:#e2e8f0;">Use <span class="hint-cmd">find</span> with filters. <span class="hint-cmd">-size 1033c</span> matches exactly 1033 bytes. <span class="hint-cmd">-not -executable</span> rules out programs. Start the search from inhere and let find dig through every subfolder.</p>
+    </div>
+  </div>
+</div>
+
+<div class="slide" id="s15">
+  <div class="stag">Level 6</div>
+  <h2 class="sh2">Challenge 6: Search the Whole Server</h2>
+  <div class="level-card">
+    <div class="level-top">
+      <div class="level-num">6</div>
+      <div>
+        <div class="level-title">File hidden somewhere on the system</div>
+        <span class="level-skill">SKILL: find by owner and size</span>
+      </div>
+    </div>
+    <div class="level-desc">The file is somewhere on the entire server. It is owned by user bandit7, group bandit6, and is 33 bytes. Searching everything produces many permission errors you can ignore.</div>
+    <div class="hint-row">
+      <div class="hint-label">Command Hints</div>
+      <p style="font-size:.84rem;color:#e2e8f0;">Search from the top with <span class="hint-cmd">find /</span>. Add <span class="hint-cmd">-user bandit7</span>, <span class="hint-cmd">-group bandit6</span>, and <span class="hint-cmd">-size 33c</span>. Hide the errors by adding <span class="hint-cmd">2>/dev/null</span> at the end.</p>
+    </div>
+  </div>
+</div>
+
+<div class="slide" id="s16">
+  <div class="stag">New Idea</div>
+  <h2 class="sh2">2&gt;/dev/null: Hiding Errors</h2>
+  <p style="font-size:.9rem;color:#cbd5e1;line-height:1.7;margin-bottom:1rem;">Level 6 introduces a trick that hides error messages so they do not bury your results.</p>
+  <div class="cmd">find / -size 33c 2>/dev/null</div>
+  <ul class="blist" style="margin-top:.8rem;">
+    <li><strong>2</strong> means error output</li>
+    <li><strong>&gt;</strong> means send it somewhere</li>
+    <li><strong>/dev/null</strong> is a black hole that throws away anything sent to it</li>
+    <li>Result: errors vanish, real results still show</li>
+  </ul>
+  <div class="infobox" style="margin-top:1rem;">
+    <div class="ilabel">USED CONSTANTLY</div>
+    <p>Searching a whole system always produces permission-denied noise. This trick is one of the most-used in real security work.</p>
+  </div>
+</div>
+
+<div class="slide" id="s17">
+  <div class="stag">Level 7</div>
+  <h2 class="sh2">Challenge 7: Word in a Big File</h2>
+  <div class="level-card">
+    <div class="level-top">
+      <div class="level-num">7</div>
+      <div>
+        <div class="level-title">Password next to a specific word</div>
+        <span class="level-skill">SKILL: grep</span>
+      </div>
+    </div>
+    <div class="level-desc">The password sits in data.txt right next to the word <strong>millionth</strong>. The file has thousands of lines. Reading it by hand would take forever.</div>
+    <div class="hint-row">
+      <div class="hint-label">Command Hints</div>
+      <p style="font-size:.84rem;color:#e2e8f0;">This is what <span class="hint-cmd">grep</span> is built for. Search for the word millionth inside data.txt. grep prints only the line that contains it, which holds the password.</p>
+    </div>
+  </div>
+</div>
+
+<div class="slide" id="s18">
+  <div class="stag">Level 8</div>
+  <h2 class="sh2">Challenge 8: The Line That Appears Once</h2>
+  <div class="level-card">
+    <div class="level-top">
+      <div class="level-num">8</div>
+      <div>
+        <div class="level-title">Unique line among duplicates</div>
+        <span class="level-skill">SKILL: sort and uniq</span>
+      </div>
+    </div>
+    <div class="level-desc">data.txt has many lines and most repeat several times. The password is the only line that appears exactly once. Too many lines to spot by eye.</div>
+    <div class="hint-row">
+      <div class="hint-label">Command Hints</div>
+      <p style="font-size:.84rem;color:#e2e8f0;">Chain two commands with a pipe. First <span class="hint-cmd">sort data.txt</span> groups identical lines together. Then pipe into <span class="hint-cmd">uniq -u</span>, which keeps only lines that never repeat.</p>
+    </div>
+  </div>
+</div>
+
+<div class="slide" id="s19">
+  <div class="stag">New Idea</div>
+  <h2 class="sh2">Pipes: Chaining Commands</h2>
+  <p style="font-size:.9rem;color:#cbd5e1;line-height:1.7;margin-bottom:1rem;">Level 8 uses a pipe for the first time. A pipe takes the output of one command and feeds it straight into the next.</p>
+  <div class="cmd">sort data.txt | uniq -u</div>
+  <ul class="blist" style="margin-top:.8rem;">
+    <li><strong>sort data.txt</strong> sorts every line</li>
+    <li><strong>|</strong> the pipe passes that result forward</li>
+    <li><strong>uniq -u</strong> keeps only the unique lines</li>
+  </ul>
+  <div class="infobox" style="margin-top:1rem;">
+    <div class="ilabel">THE BIG IDEA</div>
+    <p>Pipes let you build pipelines: each command does one job, chained together to solve big problems. Professional terminal work uses pipes constantly.</p>
+  </div>
+</div>
+
+<div class="slide" id="s20">
+  <div class="stag">Level 9</div>
+  <h2 class="sh2">Challenge 9: Strings in a Binary File</h2>
+  <div class="level-card">
+    <div class="level-top">
+      <div class="level-num">9</div>
+      <div>
+        <div class="level-title">Readable text buried in binary data</div>
+        <span class="level-skill">SKILL: strings command</span>
+      </div>
+    </div>
+    <div class="level-desc">data.txt is mostly binary data with a few readable pieces mixed in. The password is one of those readable strings, marked by several equals signs in front of it. Reading the file directly shows gibberish.</div>
+    <div class="hint-row">
+      <div class="hint-label">Command Hints</div>
+      <p style="font-size:.84rem;color:#e2e8f0;">The <span class="hint-cmd">strings</span> command pulls all readable text out of any file. Run strings on data.txt, then pipe to <span class="hint-cmd">grep =</span> to filter for the lines with equals signs.</p>
+    </div>
+  </div>
+</div>
+
+<div class="slide" id="s21">
+  <div class="stag">Level 10</div>
+  <h2 class="sh2">Challenge 10: Base64 Decoding</h2>
+  <div class="level-card">
+    <div class="level-top">
+      <div class="level-num">10</div>
+      <div>
+        <div class="level-title">Decode a scrambled file</div>
+        <span class="level-skill">SKILL: base64 decoding</span>
+      </div>
+    </div>
+    <div class="level-desc">data.txt holds text encoded in base64, a way of scrambling text into random-looking letters and numbers, usually ending in equals signs. You need to decode it back to normal.</div>
+    <div class="hint-row">
+      <div class="hint-label">Command Hints</div>
+      <p style="font-size:.84rem;color:#e2e8f0;">Look at the file with <span class="hint-cmd">cat data.txt</span> first. Then decode it: <span class="hint-cmd">base64 -d data.txt</span>. The -d flag means decode. The output is a readable line containing the password.</p>
+    </div>
+  </div>
+</div>
+
+<div class="slide" id="s22">
+  <div class="stag">Commands You Learned</div>
+  <h2 class="sh2">Your New Toolkit</h2>
+  <ul class="blist">
+    <li><strong>ssh user@host -p port</strong> - connect to a remote server</li>
+    <li><strong>ls, cd, cat</strong> - list, navigate, and read</li>
+    <li><strong>ls -a</strong> - show hidden files</li>
+    <li><strong>./filename</strong> - reference a file in the current folder</li>
+    <li><strong>file</strong> - identify what a file contains</li>
+    <li><strong>find with -size, -user, -group</strong> - search by traits</li>
+    <li><strong>grep</strong> - search inside files</li>
+    <li><strong>sort, uniq, strings, base64</strong> - process and decode data</li>
+    <li><strong>pipes and 2&gt;/dev/null</strong> - chain commands and hide errors</li>
+  </ul>
+</div>
+
+<div class="slide" id="s23">
+  <div class="stag">Persistence</div>
+  <h2 class="sh2">Getting Stuck Is Normal</h2>
+  <div class="warnbox">
+    <div class="wlabel">WHEN YOU CANNOT FIGURE IT OUT</div>
+    <p>Read the challenge again slowly. Look at the command hints on the slide. Try the command. Get it wrong. Read the error. Adjust. Try again. This struggle is the lesson. Every level you break through on your own builds real skill.</p>
+  </div>
+  <div class="infobox" style="margin-top:1rem;">
+    <div class="ilabel">LAST RESORT</div>
+    <p>If you are truly stuck after real effort, the Bandit site at overthewire.org/wargames/bandit has full explanations. Use them only after you have genuinely tried.</p>
+  </div>
+</div>
+
+<div class="slide" id="s24">
+  <div class="stag">Homework</div>
+  <h2 class="sh2">Finish Levels 1 Through 10</h2>
+  <div class="level-card" style="margin-top:0;">
+    <div class="level-top"><div class="level-num" style="font-size:1rem;min-width:auto;">DUE: NEXT CLASS</div></div>
+    <div class="level-desc">Complete any of levels 1 through 10 you did not finish in class. For each level, write one sentence in your text file naming the command that solved it. Bring your notes and your password list.</div>
+    <div class="hint-row">
+      <div class="hint-label">Goal</div>
+      <p style="font-size:.84rem;color:#e2e8f0;">Be sitting on the Level 10 password by next class. Day 3 picks up right where you stopped, at Level 11, and the levels get tougher.</p>
+    </div>
+  </div>
+</div>
+
+<div class="slide" id="s25">
+  <div class="stag">Safety</div>
+  <h2 class="sh2">Authorized Practice Only</h2>
+  <div class="warnbox">
+    <div class="wlabel">BANDIT IS SANCTIONED</div>
+    <p>OverTheWire Bandit is built specifically for this kind of practice. You have permission to do everything these levels ask. Never apply these techniques to any other server, account, or system without explicit written permission. Authorized practice is education. Unauthorized access is a crime.</p>
+  </div>
+</div>
+
+<div class="slide" id="s26">
+  <div class="stag">Preview</div>
+  <h2 class="sh2">What Comes Next</h2>
+  <ul class="blist">
+    <li>Day 3: Bandit levels 11 through 20. Encoding, encryption, SSH keys, and connecting to network ports. The commands get more advanced</li>
+    <li>Day 4: CyLab Academy CTF. Competitive capture-the-flag across five categories</li>
+    <li>Day 5: The Network Heist. Hunt five hidden flags on the instructor's live device</li>
+  </ul>
+  <div class="okbox" style="margin-top:1rem;">
+    <div class="oklabel">TODAY WAS THE FOUNDATION</div>
+    <p>Connect, navigate, read, search, decode. Everything that follows builds on the terminal skills you just earned the hard way, one level at a time.</p>
+  </div>
+</div>
+
+</div>
+<div class="nav">
+  <button class="nbtn" id="prev-btn" onclick="changeSlide(-1)" disabled>PREV</button>
+  <div class="pbar"><div class="pfill" id="progress"></div></div>
+  <div class="scnt" id="counter">1 / 26</div>
+  <button class="nbtn" id="next-btn" onclick="changeSlide(1)">NEXT</button>
+</div>
+<script>
+let cur=1;const tot=26;
+function changeSlide(d){
+  document.getElementById('s'+cur).classList.remove('active');
+  cur=Math.min(Math.max(cur+d,1),tot);
+  document.getElementById('s'+cur).classList.add('active');
+  document.getElementById('prev-btn').disabled=cur===1;
+  document.getElementById('next-btn').disabled=cur===tot;
+  document.getElementById('counter').textContent=cur+' / '+tot;
+  document.getElementById('progress').style.width=((cur/tot)*100)+'%';
+  window.scrollTo(0,0);
+}
+document.addEventListener('keydown',e=>{
+  if(e.key==='ArrowRight'||e.key==='ArrowDown')changeSlide(1);
+  if(e.key==='ArrowLeft'||e.key==='ArrowUp')changeSlide(-1);
+});
+document.getElementById('progress').style.width=((1/tot)*100)+'%';
+</script>
+</body>
+</html>
